@@ -1,0 +1,46 @@
+import React, { useEffect, useState } from 'react'
+import { fetchCurrencies } from '../api/api_currency'
+
+function AllCurrencies() {
+
+    const [currencies, setCurrencies] = useState([])
+    const [filteredCurrencies, setFilteredCurrencies] = useState([])
+    const [searchTerm, setSearchTerm] = useState("");
+
+    useEffect(() => {
+        async function fetchData() {
+            const response = await fetchCurrencies();
+            if (response.data.currencies) {
+                const currenciesArray = Object.keys(response.data.currencies).map((key) => [String(key), response.data.currencies[key]]);
+                setCurrencies(currenciesArray)
+                setFilteredCurrencies(currenciesArray)
+            }
+            console.log(response.data, "Response useEffect")
+        }
+        fetchData()
+
+    }, [])
+
+    useEffect(() => {
+        if (searchTerm.trim("") !== "") {
+            const filtered = currencies?.filter((currency) => currency[0]?.toLowerCase().includes(searchTerm.toLowerCase()) || currency[1]?.toLowerCase().includes(searchTerm.toLowerCase()))
+            setFilteredCurrencies(filtered)
+        }
+    }, [searchTerm])
+
+    return (
+        <div className="py-3">
+            <div className='card card-body'>
+                <h2>Currencies</h2>
+
+                <label>Search currencies</label>
+                <input value={searchTerm} onChange={e => setSearchTerm(e.target.value)} className='form-control mb-2' placeholder='Search currency' />
+
+                {filteredCurrencies?.map((currency, index) => {
+                    return <p key={index}>{currency[0]} - {currency[1]}</p>
+                })}
+            </div>
+        </div>
+    )
+}
+export default AllCurrencies
